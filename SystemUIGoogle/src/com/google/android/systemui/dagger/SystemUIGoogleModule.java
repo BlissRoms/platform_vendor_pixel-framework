@@ -28,7 +28,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 
 import com.android.keyguard.KeyguardViewController;
+import com.android.systemui.accessibility.AccessibilityModule;
 import com.android.systemui.accessibility.SystemActionsModule;
+import com.android.systemui.accessibility.data.repository.AccessibilityRepositoryModule;
 import com.android.systemui.assist.AssistManager;
 import com.android.systemui.battery.BatterySaverModule;
 import com.android.systemui.broadcast.BroadcastDispatcher;
@@ -44,6 +46,8 @@ import com.android.systemui.dock.DockManager;
 import com.android.systemui.dock.DockManagerImpl;
 import com.android.systemui.doze.DozeHost;
 import com.android.systemui.dump.DumpManager;
+import com.android.systemui.keyguard.ui.view.layout.blueprints.KeyguardBlueprintModule;
+import com.android.systemui.keyguard.ui.view.layout.sections.KeyguardSectionsModule;
 import com.android.systemui.bliss.BlissModule;
 import com.android.systemui.media.dagger.MediaModule;
 import com.android.systemui.media.muteawait.MediaMuteAwaitConnectionCli;
@@ -68,6 +72,7 @@ import com.android.systemui.ScreenDecorationsModule;
 import com.android.systemui.screenshot.ReferenceScreenshotModule;
 import com.android.systemui.settings.MultiUserUtilsModule;
 import com.android.systemui.settings.UserContentResolverProvider;
+import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.NotificationShadeWindowControllerImpl;
 import com.android.systemui.shade.ShadeExpansionStateManager;
 import com.android.systemui.shade.ShadeModule;
@@ -108,7 +113,6 @@ import com.android.systemui.statusbar.phone.KeyguardBypassController;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
 import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider;
 import com.android.systemui.statusbar.policy.ConfigurationController;
-import com.android.systemui.statusbar.phone.HeadsUpManagerPhone;
 import com.android.systemui.util.settings.GlobalSettings;
 import com.android.systemui.util.time.SystemClock;
 import com.android.systemui.util.concurrency.DelayableExecutor;
@@ -123,7 +127,6 @@ import com.google.android.systemui.assist.AssistManagerGoogle;
 import com.google.android.systemui.assist.dagger.AssistModule;
 import com.google.android.systemui.columbus.dagger.ColumbusModule;
 import com.google.android.systemui.controls.GoogleControlsTileResourceConfigurationImpl;
-import com.google.android.systemui.elmyra.dagger.ElmyraModule;
 import com.google.android.systemui.dreamliner.DockObserver;
 import com.google.android.systemui.dreamliner.dagger.DreamlinerModule;
 import com.google.android.systemui.power.dagger.PowerModuleGoogle;
@@ -137,7 +140,6 @@ import com.google.android.systemui.smartspace.dagger.SmartspaceGoogleModule;
 import com.google.android.systemui.statusbar.dagger.StartCentralSurfacesGoogleModule;
 import com.google.android.systemui.statusbar.KeyguardIndicationControllerGoogle;
 import com.google.android.systemui.statusbar.policy.BatteryControllerImplGoogle;
-import com.google.android.systemui.elmyra.ServiceConfigurationGoogle;
 import com.google.android.systemui.statusbar.policy.dagger.SystemUIGooglePolicyModule;
 import com.google.android.systemui.SystemUIGoogleAppComponentFactory;
 
@@ -150,11 +152,15 @@ import dagger.Provides;
 import dagger.Lazy;
 
 @Module(includes = {
+        AccessibilityModule.class,
+        AccessibilityRepositoryModule.class,
         CollapsedStatusBarFragmentStartableModule.class,
         ConnectingDisplayViewModel.StartableModule.class,
         GestureModule.class,
         HeadsUpModule.class,
         KeyboardShortcutsModule.class,
+        KeyguardBlueprintModule.class,
+        KeyguardSectionsModule.class,
         MediaModule.class,
         MediaMuteAwaitConnectionCli.StartableModule.class,
         MultiUserUtilsModule.class,
@@ -183,7 +189,6 @@ import dagger.Lazy;
         DreamlinerModule.class,
         ReverseChargingModule.class,
         AssistModule.class,
-        ElmyraModule.class,
         ColumbusModule.class,
         SystemUIGooglePolicyModule.class,
         BlissModule.class
@@ -230,9 +235,9 @@ public abstract class SystemUIGoogleModule {
     @Provides
     @SysUISingleton
     static IndividualSensorPrivacyController provideIndividualSensorPrivacyController(
-            SensorPrivacyManager sensorPrivacyManager) {
-        IndividualSensorPrivacyController spC = new IndividualSensorPrivacyControllerImpl(
-                sensorPrivacyManager);
+            SensorPrivacyManager sensorPrivacyManager, UserTracker userTracker) {
+        IndividualSensorPrivacyController spC =
+                new IndividualSensorPrivacyControllerImpl(sensorPrivacyManager, userTracker);
         spC.init();
         return spC;
     }
@@ -254,7 +259,9 @@ public abstract class SystemUIGoogleModule {
 
     @Provides
     @SysUISingleton
-    static Recents provideRecents(Context context, RecentsImplementation recentsImplementation,
+    static Recents provideRecents(
+            Context context,
+            RecentsImplementation recentsImplementation,
             CommandQueue commandQueue) {
         return new Recents(context, recentsImplementation, commandQueue);
     }

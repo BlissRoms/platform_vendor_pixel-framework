@@ -28,11 +28,12 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
+import com.android.systemui.statusbar.notification.HeadsUpManagerPhone;
 import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
-import com.android.systemui.statusbar.phone.HeadsUpManagerPhone;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper;
+import com.android.systemui.statusbar.policy.AvalancheController;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.HeadsUpManagerLogger;
 import com.android.systemui.util.concurrency.DelayableExecutor;
@@ -75,7 +76,8 @@ public interface StatusBarPhoneModule {
             AccessibilityManagerWrapper accessibilityManagerWrapper,
             UiEventLogger uiEventLogger,
             JavaAdapter javaAdapter,
-            ShadeInteractor shadeInteractor) {
+            ShadeInteractor shadeInteractor,
+            AvalancheController avalancheController) {
         return Optional.of(new HeadsUpManagerPhone(
                 context,
                 logger,
@@ -91,6 +93,7 @@ public interface StatusBarPhoneModule {
                 accessibilityManagerWrapper,
                 uiEventLogger,
                 javaAdapter,
-                shadeInteractor));
+                shadeInteractor,
+                avalancheController));
     }
 }

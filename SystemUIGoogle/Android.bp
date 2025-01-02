@@ -21,7 +21,6 @@ android_library {
         "matchmaker-lib",
         "touchcontext-lib",
         "nga-lib",
-        "elmyra-lib",
         "columbus-lib",
         "androidx.concurrent_concurrent-futures-ktx",
     ],
@@ -81,10 +80,4 @@ java_library {
     static_libs: [
         "vendor.google.google_battery-V1-java",
     ],
-}
-
-java_import  {
-    name: "googlebattery-lib",
-    sdk_version: "current",
-    jars: ["libs/googlebattery.jar"],
 }
